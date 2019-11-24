@@ -36,30 +36,10 @@ public class ConfirmationResource {
 		String surname = reservation.getSurname();
 		int screeningId = reservation.getScreeningId();
 		List<BookedSeat> seatsToBook = reservation.getBookedSeats();
-
-		if(name.length()<3 || surname.length()<3) {
-			ErrorMessage errorMessage = new ErrorMessage("Za krótkie imiê lub nazwisko!");
+		
+		ErrorMessage errorMessage = new ErrorMessage(checkInputData(name,surname,seatsToBook,screeningId));
+		if(errorMessage.getMessage()!="OK") {
             return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
-		}
-		if(checkName(name)==false) {
-			ErrorMessage errorMessage = new ErrorMessage("B³êdne imiê!");
-            return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
-		}
-		if(checkSurname(surname)==false) {
-			ErrorMessage errorMessage = new ErrorMessage("B³êdne nazwisko!");
-            return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
-		}
-		if(seatsToBook==null || seatsToBook.size()==0) {
-			ErrorMessage errorMessage = new ErrorMessage("Trzeba wybraæ minimum jedno miejsce!");
-			return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
-		}
-		if(!checkIsAvailable(seatsToBook,screeningId)) {
-			ErrorMessage errorMessage = new ErrorMessage("Wybrano zajête miejsce!");
-			return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
-		}
-		if(checkIfFreeSpaceLeft(seatsToBook,screeningId)) {
-			ErrorMessage errorMessage = new ErrorMessage("Nie mo¿na zostawiæ jednego miejsca wolnego miêdzy dwoma zajêtymi!");
-			return Response.serverError().type(MediaType.APPLICATION_JSON).entity(errorMessage).build();
 		}
 		
 		seatsToBook.forEach((seatToBook) -> seatToBook.setScreeningId(screeningId));
@@ -83,6 +63,28 @@ public class ConfirmationResource {
         GenericEntity<Reservation> myEntity = new GenericEntity<Reservation>(reservation) {};
         return Response.status(200).entity(myEntity).build();
     }
+	
+	private String checkInputData(String name,String surname,List<BookedSeat> seatsToBook,int screeningId) {
+		if(name.length()<3 || surname.length()<3) {
+			return "Za krótkie imiê lub nazwisko!";
+		}
+		if(!checkName(name)) {
+			return "B³êdne imiê!";
+		}
+		if(!checkSurname(surname)) {
+			return "B³êdne nazwisko!";
+		}
+		if(seatsToBook==null || seatsToBook.size()==0) {
+			return "Trzeba wybraæ minimum jedno miejsce!";
+		}
+		if(!checkIsAvailable(seatsToBook,screeningId)) {
+			return "Wybrano zajête miejsce!";
+		}
+		if(checkIfFreeSpaceLeft(seatsToBook,screeningId)) {
+			return "Nie mo¿na zostawiæ jednego miejsca wolnego miêdzy dwoma zajêtymi!";
+		}
+		return "OK";
+	}
 		
 	private Boolean checkName(String name) {
 		Boolean isCorrect = Character.isUpperCase(name.charAt(0));
