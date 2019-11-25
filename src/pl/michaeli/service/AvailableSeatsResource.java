@@ -15,7 +15,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import pl.michaeli.model.ErrorMessage;
 import pl.michaeli.model.Screening;
 import pl.michaeli.model.Seat;
-import pl.michaeli.spring.config.AppConfig;
 import pl.michaeli.spring.dao.ScreeningsDAO;
 import pl.michaeli.spring.dao.SeatsDAO;
 
@@ -26,10 +25,9 @@ public class AvailableSeatsResource {
     @Path("s/{screeningId}")
     @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
 	public Response getAvailableSeats(@PathParam("screeningId") int screeningId) {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		SeatsDAO seatsDAO=context.getBean(SeatsDAO.class);
 		ScreeningsDAO screeningsDAO=context.getBean(ScreeningsDAO.class);
-		context.close();
 		
 		if(!screeningsDAO.doesExist(screeningId)) {
 			ErrorMessage errorMessage = new ErrorMessage("Podany seans nie istnieje!");

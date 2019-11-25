@@ -15,7 +15,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import pl.michaeli.model.ErrorMessage;
 import pl.michaeli.model.Screening;
-import pl.michaeli.spring.config.AppConfig;
 import pl.michaeli.spring.dao.FilmsDAO;
 import pl.michaeli.spring.dao.ScreeningsDAO;
 
@@ -33,10 +32,9 @@ public class ScreeningsResource {
     	
 		if(dateFrom<getAllowedStartDate()) dateFrom=getAllowedStartDate();
 		
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		ScreeningsDAO screeningsDAO=context.getBean(ScreeningsDAO.class);
 		FilmsDAO filmsDAO=context.getBean(FilmsDAO.class);
-		context.close();
 		
 		List<Screening> screenings = screeningsDAO.getScreeningsByDate(dateFrom,dateTo);
 		screenings.forEach((screening) -> screening.setFilm(filmsDAO.getFilmById(screening.getFilmId())));

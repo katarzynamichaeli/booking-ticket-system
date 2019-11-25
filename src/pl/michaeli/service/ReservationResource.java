@@ -15,7 +15,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 import pl.michaeli.model.BookedSeat;
 import pl.michaeli.model.ErrorMessage;
 import pl.michaeli.model.Reservation;
-import pl.michaeli.spring.config.AppConfig;
 import pl.michaeli.spring.dao.BookedSeatsDAO;
 import pl.michaeli.spring.dao.ReservationsDAO;
 
@@ -26,10 +25,9 @@ public class ReservationResource {
     @Path("{reservationId}")
     @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
     public Response getReservationDetails(@PathParam("reservationId") int reservationId) {
-    	AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
     	ReservationsDAO reservationsDAO=context.getBean(ReservationsDAO.class);
     	BookedSeatsDAO bookedSeatsDAO=context.getBean(BookedSeatsDAO.class);
-		context.close();
 		
 		if(!reservationsDAO.doesExist(reservationId)) {
 			ErrorMessage errorMessage = new ErrorMessage("Podana rezerwacja nie istnieje!");

@@ -12,7 +12,6 @@ import org.springframework.context.annotation.AnnotationConfigApplicationContext
 
 import pl.michaeli.model.ErrorMessage;
 import pl.michaeli.model.Voucher;
-import pl.michaeli.spring.config.AppConfig;
 import pl.michaeli.spring.dao.ReservationsDAO;
 import pl.michaeli.spring.dao.VouchersDAO;
 
@@ -23,10 +22,9 @@ public class VoucherResource {
 	@Path("r/{reservationId}/v/{voucherCode}")
     @Produces({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
 	public Response addVoucher(@PathParam("reservationId") int reservationId,@PathParam("voucherCode") String voucherCode) {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		ReservationsDAO reservationsDAO=context.getBean(ReservationsDAO.class);
 		VouchersDAO vouchersDAO=context.getBean(VouchersDAO.class);
-		context.close();
 		
 		if(!reservationsDAO.doesExist(reservationId)) {
 			ErrorMessage errorMessage = new ErrorMessage("Podana rezerwacja nie istnieje!");

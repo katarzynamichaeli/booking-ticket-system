@@ -17,7 +17,6 @@ import pl.michaeli.model.BookedSeat;
 import pl.michaeli.model.ErrorMessage;
 import pl.michaeli.model.Reservation;
 import pl.michaeli.model.Seat;
-import pl.michaeli.spring.config.AppConfig;
 import pl.michaeli.spring.dao.BookedSeatsDAO;
 import pl.michaeli.spring.dao.ReservationsDAO;
 import pl.michaeli.spring.dao.ScreeningsDAO;
@@ -44,7 +43,7 @@ public class ConfirmationResource {
 		
 		seatsToBook.forEach((seatToBook) -> seatToBook.setScreeningId(screeningId));
 
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		ScreeningsDAO screeningsDAO=context.getBean(ScreeningsDAO.class);
 		
 		Date screeningDate = (screeningsDAO.getScreeningById(screeningId)).getScreeningDate();
@@ -57,8 +56,6 @@ public class ConfirmationResource {
 		reservation=reservationsDAO.addReservation(reservation);
 		bookedSeatsDAO.addBookedSeats(reservation);
 		reservation.setBookedSeats(bookedSeatsDAO.getBookedSeatsByReservationId(reservation.getReservationId()));
-
-		context.close();
 
         GenericEntity<Reservation> myEntity = new GenericEntity<Reservation>(reservation) {};
         return Response.status(200).entity(myEntity).build();
@@ -109,9 +106,8 @@ public class ConfirmationResource {
 	}
 	
 	private double countTotalAmount(List<BookedSeat> bookedSeats, Date screeningDate) {
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		TicketTypesDAO ticketTypesDAO=context.getBean(TicketTypesDAO.class);
-		context.close();
 		double totalAmount=0;
 		for(int i=0; i<bookedSeats.size(); i++) {
 			totalAmount+=ticketTypesDAO.getPrice(bookedSeats.get(i).getTicketTypeId());
@@ -152,7 +148,7 @@ public class ConfirmationResource {
 	
 	private Boolean checkIsAvailable(List<BookedSeat> seatsToBook,int screeningId) {
 		Boolean isAvailable=true;
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		BookedSeatsDAO bookedSeatsDAO=context.getBean(BookedSeatsDAO.class);
 		for(int i=0;i<seatsToBook.size();i++) {
 			BookedSeat seatToBook=seatsToBook.get(i);
@@ -161,7 +157,6 @@ public class ConfirmationResource {
 				break;
 			}
 		}
-		context.close();
 		return isAvailable;
 	}
 	
@@ -174,7 +169,7 @@ public class ConfirmationResource {
 			}
 		}
 
-		AnnotationConfigApplicationContext context = new AnnotationConfigApplicationContext(AppConfig.class);
+    	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		SeatsDAO seatsDAO=context.getBean(SeatsDAO.class);
 		for(int i=0;i<seatsToBook.size();i++) {
 			Seat seat = seatsDAO.getSeatById(seatsToBook.get(i).getSeatId());
@@ -192,7 +187,6 @@ public class ConfirmationResource {
 			int seatNo = seat.getSeatNo();
 			placesInRoom[rowNo-1][seatNo-1]=1;
 		}
-		context.close();
 
 		for(int i=0;i<5;i++) {
 			for(int j=0;j<10;j++) {
