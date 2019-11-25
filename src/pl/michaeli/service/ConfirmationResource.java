@@ -26,6 +26,8 @@ import pl.michaeli.spring.dao.TicketTypesDAO;
 
 @Path("confirm")
 public class ConfirmationResource {
+	static final int NUMBER_OF_ROWS_IN_SCREENING_ROOM = 5;
+	static final int NUMBER_OF_SEATS_IN_ROW_IN_SCREENING_ROOM = 10;	
 
 	@POST
 	@Consumes({MediaType.APPLICATION_XML,MediaType.APPLICATION_JSON})
@@ -108,10 +110,9 @@ public class ConfirmationResource {
 	private double countTotalAmount(List<BookedSeat> bookedSeats, Date screeningDate) {
     	AnnotationConfigApplicationContext context = SingletonAppContext.getContext();
 		TicketTypesDAO ticketTypesDAO=context.getBean(TicketTypesDAO.class);
-		double totalAmount=0;
-		for(int i=0; i<bookedSeats.size(); i++) {
-			totalAmount+=ticketTypesDAO.getPrice(bookedSeats.get(i).getTicketTypeId());
-		}
+		double totalAmount=bookedSeats.stream()
+				.mapToDouble(t -> ticketTypesDAO.getPrice(t.getTicketTypeId()))
+				.sum();
 		if(checkIsWeekend(screeningDate)) {
 			totalAmount = totalAmount + 4*bookedSeats.size();
 		}
@@ -162,9 +163,9 @@ public class ConfirmationResource {
 	
 	private Boolean checkIfFreeSpaceLeft(List<BookedSeat> seatsToBook,int screeningId) {
 		Boolean isFreeSpaceLeft=false;
-		int[][]placesInRoom = new int[5][10];
-		for(int i=0;i<5;i++) {
-			for(int j=0;j<10;j++) {
+		int[][]placesInRoom = new int[NUMBER_OF_ROWS_IN_SCREENING_ROOM][NUMBER_OF_SEATS_IN_ROW_IN_SCREENING_ROOM];
+		for(int i=0;i<NUMBER_OF_ROWS_IN_SCREENING_ROOM;i++) {
+			for(int j=0;j<NUMBER_OF_SEATS_IN_ROW_IN_SCREENING_ROOM;j++) {
 				placesInRoom[i][j]=0;
 			}
 		}
@@ -188,19 +189,13 @@ public class ConfirmationResource {
 			placesInRoom[rowNo-1][seatNo-1]=1;
 		}
 
-		for(int i=0;i<5;i++) {
-			for(int j=0;j<10;j++) {
-				System.out.print(placesInRoom[i][j] + " ");
-			}
-			System.out.println();
-		}
-		for(int i=0;i<5;i++) {
-			for(int j=0;j<10;j++) {
+		for(int i=0;i<NUMBER_OF_ROWS_IN_SCREENING_ROOM;i++) {
+			for(int j=0;j<NUMBER_OF_SEATS_IN_ROW_IN_SCREENING_ROOM;j++) {
 				if(j==0) {
 					if(placesInRoom[i][j]==0 && placesInRoom[i][j+1]==1) {
 						isFreeSpaceLeft=true;
 					}
-				}else if(j==9) {
+				}else if(j==NUMBER_OF_SEATS_IN_ROW_IN_SCREENING_ROOM-1) {
 					if(placesInRoom[i][j]==0 && placesInRoom[i][j-1]==1) {
 						isFreeSpaceLeft=true;
 					}
